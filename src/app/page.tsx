@@ -16,6 +16,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
   return (
     <PageWrapper className="gap-8 flex flex-col-reverse lg:flex-row items-center lg:justify-between justify-end !px-24">
       <DutyCalendar duties={duties} userId={userId.value} />
+      <div className="hidden"></div>
     </PageWrapper>
   );
 };
