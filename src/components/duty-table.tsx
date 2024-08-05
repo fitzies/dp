@@ -20,7 +20,7 @@ const DutyTable = async ({
   const users: User[] = await getUsers(); // Ensure this returns User[] type
 
   return (
-    <Table className="!w-full overflow-y-auto">
+    <Table className="!w-full !overflow-y-auto">
       <TableCaption>Duty assignments for {team.name}</TableCaption>
       <TableHeader>
         <TableRow>

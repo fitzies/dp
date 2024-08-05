@@ -55,7 +55,7 @@ const DutyCalendar = ({
           mode="single"
           selected={date ? new Date(date) : new Date()}
           onSelect={selectDate}
-          className="rounded-md"
+          className="rounded-md overflow-hidden"
           activeDuties={duties}
         />
         <Legend text="Active duties" color="red" />
