@@ -1,7 +1,7 @@
 import { getUser } from "@/lib/server";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import ProfileCard from "./profile-card";
 
 const NavLink = ({ text, href }: { text: string; href: string }) => {
   return (
@@ -25,20 +25,13 @@ const Nav = async () => {
   }
 
   return (
-    <div className="w-full flex items-center gap-6 px-10 py-4">
+    <div className="w-full flex items-center gap-6 px-10 py-4 overflow-y-hidden">
       <div className="font-semibold text-lg mr-6 lg:block hidden">
         Duty Tracker
       </div>
       <NavLink text="My duties" href="/" />
       <NavLink text="Teams" href="/teams" />
-      <div className="ml-auto cursor-pointer flex items-center gap-4">
-        <p className="text-zinc-400 font-extralight">{user.points} points</p>
-        <Avatar>
-          <AvatarFallback>
-            {user.username.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
+      <ProfileCard user={user} />
     </div>
   );
 };

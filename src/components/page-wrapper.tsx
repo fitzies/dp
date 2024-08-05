@@ -6,7 +6,7 @@ const PageWrapper = ({
   className?: string;
 }) => {
   return (
-    <div className={"w-screen h-screen lg:px-72 px-12 py-20  " + className}>
+    <div className={"w-screen h-screen lg:px-72 px-10 py-20  " + className}>
       {children}
     </div>
   );

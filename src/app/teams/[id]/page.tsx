@@ -23,7 +23,9 @@ const Page = async ({ params }: { params: { id: string } }) => {
 
   return (
     <PageWrapper>
-      <h1 className="text-3xl font-semibold mb-4">Assigned duties</h1>
+      <h1 className="text-3xl font-semibold mb-4 overflow-hidden">
+        Assigned duties
+      </h1>
       <DutyTable team={team} duties={duties} />
     </PageWrapper>
   );

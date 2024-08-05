@@ -49,37 +49,25 @@ const DutyCalendar = ({
   };
 
   return (
-    <>
-      <div className="flex flex-col justify-center items-start">
-        <Calendar
-          mode="single"
-          selected={date ? new Date(date) : new Date()}
-          onSelect={selectDate}
-          className="rounded-md overflow-hidden"
-          activeDuties={duties}
-        />
-        <Legend text="Active duties" color="red" />
-        <Legend text="Not available" color="yellow" />
-        <Legend text="Secondary duties" color="blue" />
-      </div>
+    <div className="flex lg:flex-row flex-col justify-between items-center gap-4 lg:pt-10">
       <div className="flex flex-col lg:w-2/3 w-full mx-auto lg:px-16">
         {date ? (
           <>
-            <h2 className="font-semibold text-3xl">
+            <h2 className="font-semibold text-3xl break-words overflow-hidden">
               {`${format(
                 parse(date, "yyyy-MM-dd", new Date()),
                 "EEEE, d MMMM"
               )}`}
             </h2>
-            <p className="text-zinc-400 lg:text-md text-sm">
+            {/* <p className="text-zinc-400 lg:text-md text-sm">
               Please note that even if you schedule plans for a specific date,
               it does not guarantee that you will be excused.
-            </p>
+            </p> */}
             <div className="py-4 text-zinc-400">
               <div className="mb-1">You have:</div>
               {selectedDuty ? (
                 <div
-                  className={`p-1 rounded-md border-2 ${
+                  className={`p-1 rounded-md border-2 text-center ${
                     selectedDuty.name === "NOT_AVAILABLE"
                       ? "bg-yellow-400 bg-opacity-75 border-yellow-400"
                       : "bg-red-400 bg-opacity-75 border-red-400"
@@ -98,7 +86,13 @@ const DutyCalendar = ({
             <form className="flex mt-auto" onSubmit={handleAvailabilityToggle}>
               <input type="hidden" name="date" value={date || ""} />
               <input type="hidden" name="userId" value={userId} />
-              <Button type="submit" variant="secondary">
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={
+                  !!selectedDuty && selectedDuty.name !== "NOT_AVAILABLE"
+                }
+              >
                 {notAvailableLoading ? (
                   <Loading />
                 ) : selectedDuty && selectedDuty.name === "NOT_AVAILABLE" ? (
@@ -113,7 +107,19 @@ const DutyCalendar = ({
           <div className="text-zinc-400">No date selected</div>
         )}
       </div>
-    </>
+      <div className="flex flex-col justify-center items-start mt-8 lg:mt-0">
+        <Calendar
+          mode="single"
+          selected={date ? new Date(date) : new Date()}
+          onSelect={selectDate}
+          className="rounded-md overflow-hidden"
+          activeDuties={duties}
+        />
+        <Legend text="Active duties" color="red" />
+        <Legend text="Not available" color="yellow" />
+        <Legend text="Secondary duties" color="blue" />
+      </div>
+    </div>
   );
 };
 

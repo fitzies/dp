@@ -151,6 +151,11 @@ const getUsers = async () => {
   return users;
 };
 
+const logout = (data: FormData) => {
+  cookies().delete("userId");
+  revalidatePath("/");
+};
+
 export {
   submitLogin,
   getUser,
@@ -161,4 +166,5 @@ export {
   // fetchDuties,
   getUsers,
   makeAvailable,
+  logout,
 };
