@@ -41,6 +41,8 @@ model Duty {
   points_awarded Int
 
   @@unique([date, teamId]) // Ensure that no two duties with the same teamId can be assigned on the same date
+
+  userChangeId String?
 }
 
 

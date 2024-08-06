@@ -48,6 +48,17 @@ const submitLogin = async (data: FormData) => {
   }
 };
 
+const fetchDuties = async () => {
+  const userId = cookies().get("userId")?.value;
+  await countScore();
+
+  const data = await prisma.duty.findMany({
+    where: { userId },
+  });
+
+  return data;
+};
+
 const getUser = async () => {
   const userId = cookies().get("userId")!.value;
 
@@ -180,8 +191,42 @@ const updateCredentials = async (data: FormData) => {
   return true;
 };
 
+const countScore = async () => {
+  const duties = await prisma.duty.findMany();
+  const users = await prisma.user.findMany();
+
+  // Create a map to hold user points
+  const usersMap = new Map(
+    users.map((user) => [user.userId, { ...user, points: 0 }])
+  );
+
+  // Iterate over all duties and add points to corresponding user
+  duties.forEach((duty) => {
+    const user = usersMap.get(duty.userId);
+    if (user) {
+      user.points += duty.points_awarded;
+    }
+  });
+
+  // Convert map back to array
+  const updatedUsers = Array.from(usersMap.values());
+
+  // Update users in the database
+  for (const user of updatedUsers) {
+    await prisma.user.update({
+      where: { userId: user.userId },
+      data: { points: user.points },
+    });
+  }
+
+  revalidatePath("/");
+
+  console.log("User points updated successfully");
+};
+
 export {
   submitLogin,
+  fetchDuties,
   getUser,
   createTeam,
   getTeams,
@@ -191,4 +236,5 @@ export {
   makeAvailable,
   logout,
   updateCredentials,
+  countScore,
 };

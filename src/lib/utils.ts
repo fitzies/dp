@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import crypto from "crypto";
+import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
 
@@ -14,14 +15,6 @@ export const formatDate = (date: Date): string => {
   const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
   const year = date.getFullYear();
   return `${year}-${month}-${day}`;
-};
-
-export const fetchDuties = async (userId: string) => {
-  const data = await prisma.duty.findMany({
-    where: { userId },
-  });
-
-  return data;
 };
 
 export const fetchUsers = async () => {

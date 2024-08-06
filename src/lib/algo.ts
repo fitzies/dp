@@ -2,6 +2,7 @@
 
 import { DutyName, PrismaClient } from "@prisma/client";
 import { getDay } from "date-fns"; // Import getDay for determining day of the week
+import { countScore } from "./server";
 
 const prisma = new PrismaClient();
 
@@ -167,6 +168,9 @@ export const assignDuty = async (formData: FormData) => {
         data: { points: user.points + totalPoints },
       });
     }
+
+    // Call countScore to ensure points are accurate
+    await countScore();
   } catch (error) {
     console.error("Error assigning duties:", error);
     throw error; // Re-throw the error to be handled by the caller
