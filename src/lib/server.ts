@@ -125,7 +125,7 @@ const updateTeamMembers = async (data: FormData) => {
 const makeNotAvailable = async (data: FormData) => {
   const date = data.get("date")!.toString();
   const userId = data.get("userId")!.toString();
-  const reason = data.get("reason")!.toString();
+  const reason = data.get("reason") ?? "No reason given";
 
   const notAvailableDuty = await prisma.duty.create({
     data: {
@@ -134,7 +134,7 @@ const makeNotAvailable = async (data: FormData) => {
       userId,
       points_awarded: 0,
       teamId: -1,
-      description: reason,
+      description: reason.toString(),
     },
   });
   revalidatePath("/");
