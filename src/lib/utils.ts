@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import crypto from "crypto";
-import { getUser } from "./server";
 
 const prisma = new PrismaClient();
 
@@ -17,11 +16,9 @@ export const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-export const fetchDuties = async () => {
-  const user = await getUser();
-
+export const fetchDuties = async (userId: string) => {
   const data = await prisma.duty.findMany({
-    where: { userId: user.userId },
+    where: { userId },
   });
 
   return data;

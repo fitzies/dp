@@ -1,11 +1,9 @@
 "use server";
 
-import { PrismaClient, DutyName, User } from "@prisma/client";
+import { PrismaClient, DutyName } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { checkPassword, hashPassword } from "./utils";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { redirect } from "next/navigation";
 
 const prisma = new PrismaClient();
 
@@ -25,11 +23,9 @@ const submitLogin = async (data: FormData) => {
 
   try {
     // Fetch the user by username
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { username },
     });
-
-    console.log(user);
 
     if (!user) {
       throw new Error("User not found");
@@ -41,8 +37,7 @@ const submitLogin = async (data: FormData) => {
 
     if (matchPassword) {
       console.log("Login successful for user:", username);
-      // cookies().set("userId", user.userId.toString());
-      signToken(user);
+      cookies().set("userId", user.userId.toString());
       return user;
     } else {
       throw new Error("Invalid password");
@@ -54,19 +49,9 @@ const submitLogin = async (data: FormData) => {
 };
 
 const getUser = async () => {
-  const token = cookies().get("token");
-  if (!token) {
-    console.log("No user token");
-    redirect("/login");
-  }
+  const userId = cookies().get("userId")!.value;
 
-  let possibleUser: User = JSON.parse(
-    Buffer.from(token.value.split(".")[1], "base64").toString()
-  );
-
-  const user = await prisma.user.findFirst({
-    where: { userId: possibleUser.userId },
-  });
+  const user = await prisma.user.findFirst({ where: { userId } });
   if (!user) {
     throw Error("Can't find user");
   }
@@ -195,54 +180,6 @@ const updateCredentials = async (data: FormData) => {
   return true;
 };
 
-const signToken = async (user: User) => {
-  // let jwtToken = signToken({ id: user.id }, process.env.NEXT_PUBLIC_JWT_SECRET);
-  const privateKey = process.env.JWT_SECRET ?? "secret";
-  const token = jwt.sign(
-    {
-      token: user,
-    },
-    privateKey,
-    { expiresIn: "1h" }
-  );
-
-  cookies().set("token", token);
-
-  return token;
-};
-
-const verifyToken = async (token: any) => {
-  const privateKey = process.env.JWT_SECRET ?? "secret";
-  // const token = cookies().get("token")?.value;
-
-  if (!token) {
-    throw Error("No token available");
-  }
-
-  try {
-    const verified = await jwt.verify(token, privateKey);
-    return verified;
-  } catch (error) {
-    // Clear the token cookie
-    cookies().set("token", "", { maxAge: -1 });
-    // Redirect to login page
-    return false;
-  }
-};
-
-// export function getUser() {
-//   const token = cookies().get("token")!.value;
-//   // const privateKey = process.env.JWT_SECRET ?? "secret";
-
-//   try {
-//     // const decoded = jwt.verify(token, privateKey);
-//     let user: User = JSON.parse(
-//       Buffer.from(token.split(".")[1], "base64").toString()
-//     );
-//     return user.userId;
-//   } catch (err) {}
-// }
-
 export {
   submitLogin,
   getUser,
@@ -254,6 +191,4 @@ export {
   makeAvailable,
   logout,
   updateCredentials,
-  signToken,
-  verifyToken,
 };
