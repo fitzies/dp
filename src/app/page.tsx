@@ -2,15 +2,16 @@ import { fetchDuties } from "@/lib/utils";
 import PageWrapper from "@/components/page-wrapper";
 import { cookies } from "next/headers";
 import DutyCalendar from "@/components/duty-calendar";
+import { getUser } from "@/lib/server";
 
 const Page = async ({ params }: { params: { slug: string } }) => {
-  const userId = cookies().get("userId");
-
-  const duties = await fetchDuties(userId!.value);
+  const duties = await fetchDuties();
+  const user = await getUser();
 
   return (
     <PageWrapper>
-      <DutyCalendar duties={duties} userId={userId!.value} />
+      {user.username}
+      <DutyCalendar duties={duties} userId={user.userId} />
     </PageWrapper>
   );
 };
