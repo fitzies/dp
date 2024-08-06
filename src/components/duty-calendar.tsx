@@ -53,7 +53,7 @@ const DutyCalendar = ({
       <div className="flex flex-col lg:w-2/3 w-full mx-auto lg:px-16">
         {date ? (
           <>
-            <h2 className="font-semibold text-3xl break-words overflow-hidden">
+            <h2 className="font-semibold text-2xl break-words overflow-hidden">
               {`${format(
                 parse(date, "yyyy-MM-dd", new Date()),
                 "EEEE, d MMMM"
