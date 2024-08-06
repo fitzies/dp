@@ -9,6 +9,7 @@ import { Button } from "./ui/button";
 import { format, parse } from "date-fns";
 import { makeNotAvailable, makeAvailable } from "@/lib/server"; // Assuming you have a makeAvailable function
 import Loading from "./loading";
+import NotAvailableButton from "./not-available-btn";
 
 const DutyCalendar = ({
   duties,
@@ -29,17 +30,17 @@ const DutyCalendar = ({
 
   const selectedDuty = date ? duties.find((duty) => date === duty.date) : null;
 
-  const handleAvailabilityToggle = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleAvailabilityToggle = async (data: FormData) => {
+    // event.preventDefault();
     setNotAvailableLoading(true);
-    const formData = new FormData();
-    formData.append("date", date || "");
-    formData.append("userId", userId);
+    // const formData = new FormData();
+    // formData.append("date", date || "");
+    // formData.append("userId", userId);
     try {
       if (selectedDuty && selectedDuty.name === "NOT_AVAILABLE") {
-        await makeAvailable(formData); // Assuming you have a makeAvailable function
+        await makeAvailable(data); // Assuming you have a makeAvailable function
       } else {
-        await makeNotAvailable(formData);
+        await makeNotAvailable(data);
       }
     } catch (error) {
       console.error("Failed to toggle availability", error);
@@ -80,28 +81,12 @@ const DutyCalendar = ({
               )}
             </div>
             <div className="flex gap-2">
-              <form
-                className="flex mt-auto"
-                onSubmit={handleAvailabilityToggle}
-              >
-                <input type="hidden" name="date" value={date || ""} />
-                <input type="hidden" name="userId" value={userId} />
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  disabled={
-                    !!selectedDuty && selectedDuty.name !== "NOT_AVAILABLE"
-                  }
-                >
-                  {notAvailableLoading ? (
-                    <Loading />
-                  ) : selectedDuty && selectedDuty.name === "NOT_AVAILABLE" ? (
-                    "Make available"
-                  ) : (
-                    "Not available"
-                  )}
-                </Button>
-              </form>
+              <NotAvailableButton
+                date={date}
+                userId={userId}
+                selectedDuty={selectedDuty}
+                handleAvailabilityToggle={handleAvailabilityToggle}
+              />
               <Button
                 variant={"secondary"}
                 disabled={
