@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { logout } from "@/lib/server";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const ProfileCard = ({ user }: { user: User }) => {
   const router = useRouter();
@@ -26,17 +27,23 @@ const ProfileCard = ({ user }: { user: User }) => {
           </Avatar>
         </PopoverTrigger>
         <PopoverContent className="flex flex-col gap-2 items-start justify-center">
-          <p>You have {user.points} points</p>
-          <form
-            action={async (data) => {
-              await logout(data);
-              router.refresh();
-            }}
-          >
-            <Button variant={"secondary"} className="ml-auto">
-              Logout
-            </Button>
-          </form>
+          {/* <h3 className="text-lg font-semibold">{user.username}</h3> */}
+          <p className="text-zinc-40">You have {user.points} points</p>
+          <div className="flex w-full gap-2">
+            <form
+              action={async (data) => {
+                await logout(data);
+                router.refresh();
+              }}
+            >
+              <Button variant={"secondary"} className="ml-auto">
+                Logout
+              </Button>
+            </form>
+            <Link href={"/credentials"}>
+              <Button variant={"secondary"}>Credentials</Button>
+            </Link>
+          </div>
         </PopoverContent>
       </Popover>
     </div>

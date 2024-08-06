@@ -10,7 +10,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
   if (!userId) {
     return <></>;
   }
-  const user = await getUser(userId.value);
+  const user = await getUser();
   const existingUsers = await fetchUsers();
 
   const teams = (await getTeams()).filter(

@@ -12,11 +12,11 @@ const NavLink = ({ text, href }: { text: string; href: string }) => {
 };
 
 const Nav = async () => {
-  const userId = cookies().get("userId");
-  if (!userId) {
-    return <></>;
-  }
-  const user = await getUser(userId.value).catch((err) => {
+  // const userId = cookies().get("userId");
+  // if (!userId) {
+  //   return <></>;
+  // }
+  const user = await getUser().catch((err) => {
     console.error(err);
   });
 

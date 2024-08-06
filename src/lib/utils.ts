@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -16,27 +17,6 @@ export const formatDate = (date: Date): string => {
 };
 
 export const fetchDuties = async (userId: string) => {
-  // try {
-  //   const response = await fetch("/api/duty", {
-  //     method: "POST", // Specify the request method
-  //     headers: {
-  //       "Content-Type": "application/json", // Set the content type to JSON
-  //     },
-  //     body: JSON.stringify({ userId }), // Convert the data to JSON
-  //   });
-
-  //   if (!response.ok) {
-  //     // Handle non-2xx HTTP responses
-  //     throw new Error(`HTTP error! status: ${response.status}`);
-  //   }
-
-  //   const data = await response.json(); // Parse the JSON response
-  //   return data; // Return the data to the caller
-  // } catch (error) {
-  //   // Handle errors
-  //   console.error("Fetch error:", error);
-  //   throw error; // Re-throw the error to be handled by the caller
-  // }
   const data = await prisma.duty.findMany({
     where: { userId },
   });
@@ -48,3 +28,22 @@ export const fetchUsers = async () => {
   const data = await prisma.user.findMany();
   return data;
 };
+
+export function hashPassword(password: string): string {
+  const salt = process.env.SALT!;
+  const hash = crypto.createHmac("sha256", salt);
+  hash.update(password);
+  const hashedPassword = hash.digest("hex");
+  return hashedPassword;
+}
+
+export function checkPassword(
+  password: string,
+  hashedPassword: string
+): boolean {
+  const salt = process.env.SALT!;
+  const hash = crypto.createHmac("sha256", salt);
+  hash.update(password);
+  const computedHash = hash.digest("hex");
+  return computedHash === hashedPassword;
+}

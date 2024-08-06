@@ -1,8 +1,9 @@
 "use server";
 
-import { PrismaClient, DutyName, Duty } from "@prisma/client";
+import { PrismaClient, DutyName } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { checkPassword, hashPassword } from "./utils";
 
 const prisma = new PrismaClient();
 
@@ -15,8 +16,6 @@ const submitLogin = async (data: FormData) => {
   // Extract and validate form data
   const username = data.get("username")?.toString().trim();
   const password = data.get("password")?.toString();
-
-  console.log(username, password);
 
   if (!username || !password) {
     throw new Error("Username and password are required");
@@ -33,7 +32,10 @@ const submitLogin = async (data: FormData) => {
     }
 
     // Check if the provided password matches the stored password
-    if (password === user.password) {
+
+    const matchPassword: boolean = await checkPassword(password, user.password);
+
+    if (matchPassword) {
       console.log("Login successful for user:", username);
       cookies().set("userId", user.userId.toString());
       return user;
@@ -46,7 +48,9 @@ const submitLogin = async (data: FormData) => {
   }
 };
 
-const getUser = async (userId: string) => {
+const getUser = async () => {
+  const userId = cookies().get("userId")!.value;
+
   const user = await prisma.user.findFirst({ where: { userId } });
   if (!user) {
     throw Error("Can't find user");
@@ -156,6 +160,26 @@ const logout = (data: FormData) => {
   revalidatePath("/");
 };
 
+const updateCredentials = async (data: FormData) => {
+  const id = parseInt(data.get("id")!.toString());
+  const username = data.get("username")?.toString().trim();
+  const password = data.get("password")?.toString();
+  const confirmPassword = data.get("confirm-password")?.toString();
+
+  if (password !== confirmPassword || !password || !confirmPassword) {
+    throw Error("Passwords do not match");
+  }
+
+  const hashedPassword: string = hashPassword(password);
+
+  await prisma.user.update({
+    where: { id, username },
+    data: { username, password: hashedPassword },
+  });
+
+  return true;
+};
+
 export {
   submitLogin,
   getUser,
@@ -163,8 +187,8 @@ export {
   getTeams,
   updateTeamMembers,
   makeNotAvailable,
-  // fetchDuties,
   getUsers,
   makeAvailable,
   logout,
+  updateCredentials,
 };
