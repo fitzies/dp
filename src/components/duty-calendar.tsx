@@ -59,10 +59,6 @@ const DutyCalendar = ({
                 "EEEE, d MMMM"
               )}`}
             </h2>
-            {/* <p className="text-zinc-400 lg:text-md text-sm">
-              Please note that even if you schedule plans for a specific date,
-              it does not guarantee that you will be excused.
-            </p> */}
             <div className="py-4 text-zinc-400">
               <div className="mb-1">You have:</div>
               {selectedDuty ? (
@@ -83,25 +79,38 @@ const DutyCalendar = ({
                 </div>
               )}
             </div>
-            <form className="flex mt-auto" onSubmit={handleAvailabilityToggle}>
-              <input type="hidden" name="date" value={date || ""} />
-              <input type="hidden" name="userId" value={userId} />
+            <div className="flex gap-2">
+              <form
+                className="flex mt-auto"
+                onSubmit={handleAvailabilityToggle}
+              >
+                <input type="hidden" name="date" value={date || ""} />
+                <input type="hidden" name="userId" value={userId} />
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={
+                    !!selectedDuty && selectedDuty.name !== "NOT_AVAILABLE"
+                  }
+                >
+                  {notAvailableLoading ? (
+                    <Loading />
+                  ) : selectedDuty && selectedDuty.name === "NOT_AVAILABLE" ? (
+                    "Make available"
+                  ) : (
+                    "Not available"
+                  )}
+                </Button>
+              </form>
               <Button
-                type="submit"
-                variant="secondary"
+                variant={"secondary"}
                 disabled={
-                  !!selectedDuty && selectedDuty.name !== "NOT_AVAILABLE"
+                  !selectedDuty || (selectedDuty && selectedDuty.name !== "COS")
                 }
               >
-                {notAvailableLoading ? (
-                  <Loading />
-                ) : selectedDuty && selectedDuty.name === "NOT_AVAILABLE" ? (
-                  "Make available"
-                ) : (
-                  "Not available"
-                )}
+                Switch duty
               </Button>
-            </form>
+            </div>
           </>
         ) : (
           <div className="text-zinc-400">No date selected</div>
