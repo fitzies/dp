@@ -27,6 +27,23 @@ const NotAvailableButton = ({
 }) => {
   const [text, setText] = useState<string>("");
 
+  if (selectedDuty && selectedDuty.name === "NOT_AVAILABLE") {
+    return (
+      <form action={handleAvailabilityToggle}>
+        <input type="hidden" name="date" value={date || ""} />
+        <input type="hidden" name="userId" value={userId} />
+        <Button
+          type="submit"
+          variant="secondary"
+          disabled={!!selectedDuty && selectedDuty.name !== "NOT_AVAILABLE"}
+        >
+          {selectedDuty && selectedDuty.name === "NOT_AVAILABLE"
+            ? "Make available"
+            : "Not available"}
+        </Button>
+      </form>
+    );
+  }
   return (
     <Dialog>
       <DialogTrigger>
