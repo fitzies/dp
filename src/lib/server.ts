@@ -230,6 +230,27 @@ const countScore = async () => {
   console.log("User points updated successfully");
 };
 
+const requestDutySwitch = async (data: FormData) => {
+  const requestingDuty = parseInt(
+    (data.get("requesting-duty") ?? "NO USER").toString()
+  ); // these are the duty ids
+
+  const originalDuty = parseInt(
+    (data.get("duty-to-change") ?? "NO USER").toString()
+  ); // these are the duty ids
+
+  const requestingDutyObj = await prisma.duty.update({
+    // The requested duty has the requesting user's duty id, for the owned duty user to see what duty can be exchanged
+    where: { id: requestingDuty },
+    data: { requestSwitch: originalDuty },
+  });
+
+  console.log(requestingDutyObj);
+  revalidatePath("/");
+
+  return requestingDutyObj;
+};
+
 export {
   submitLogin,
   fetchDuties,
@@ -244,4 +265,5 @@ export {
   updateCredentials,
   countScore,
   fetchAllDuties,
+  requestDutySwitch,
 };

@@ -112,7 +112,7 @@ const DutyCalendar = ({
         />
         <Legend text="Active duties" color="red" />
         <Legend text="Not available" color="yellow" />
-        <Legend text="Secondary duties" color="blue" />
+        {/* <Legend text="Incoming requests" color="blue" /> */}
       </div>
     </div>
   );
