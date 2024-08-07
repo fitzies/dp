@@ -1,22 +1,25 @@
 "use client";
 
 import { formatDate } from "@/lib/utils";
-import { Duty } from "@prisma/client";
+import { Duty, User } from "@prisma/client";
 import { useState } from "react";
 import { Calendar } from "./ui/calendar";
 import Legend from "./calender-legend";
-import { Button } from "./ui/button";
 import { format, parse } from "date-fns";
 import { makeNotAvailable, makeAvailable } from "@/lib/server"; // Assuming you have a makeAvailable function
-import Loading from "./loading";
 import NotAvailableButton from "./not-available-btn";
+import SwitchDuty from "./switch-duty";
 
 const DutyCalendar = ({
   duties,
   userId,
+  users,
+  allDuties,
 }: {
   duties: Duty[];
   userId: string;
+  users: User[];
+  allDuties: Duty[];
 }) => {
   const [date, setDate] = useState<string | null>(formatDate(new Date()));
   const [notAvailableLoading, setNotAvailableLoading] =
@@ -87,14 +90,12 @@ const DutyCalendar = ({
                 selectedDuty={selectedDuty}
                 handleAvailabilityToggle={handleAvailabilityToggle}
               />
-              <Button
-                variant={"secondary"}
-                disabled={
-                  !selectedDuty || (selectedDuty && selectedDuty.name !== "COS")
-                }
-              >
-                Switch duty
-              </Button>
+              <SwitchDuty
+                selectedDuty={selectedDuty}
+                duties={allDuties}
+                users={users}
+                userId={userId}
+              />
             </div>
           </>
         ) : (

@@ -59,6 +59,12 @@ const fetchDuties = async () => {
   return data;
 };
 
+const fetchAllDuties = async () => {
+  const data = await prisma.duty.findMany();
+
+  return data;
+};
+
 const getUser = async () => {
   const userId = cookies().get("userId")!.value;
 
@@ -237,4 +243,5 @@ export {
   logout,
   updateCredentials,
   countScore,
+  fetchAllDuties,
 };
