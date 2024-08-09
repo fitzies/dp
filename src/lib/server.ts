@@ -1,6 +1,6 @@
 "use server";
 
-import { PrismaClient, DutyName } from "@prisma/client";
+import { PrismaClient, DutyName, Duty, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { checkPassword, hashPassword } from "./utils";
@@ -159,13 +159,14 @@ const makeAvailable = async (data: FormData) => {
     throw Error("No unavailable duty on this date");
     return false;
   }
-
-  const AvailableDuty = await prisma.duty.delete({
-    where: { id: unavailableDuty?.id },
-  });
-  revalidatePath("/");
-  return true;
 };
+
+//   const AvailableDuty = await prisma.duty.delete({
+//     where: { id: unavailableDuty?.id },
+//   });
+//   revalidatePath("/");
+//   return true;
+// };
 
 const getUsers = async () => {
   const users = await prisma.user.findMany();
@@ -198,57 +199,134 @@ const updateCredentials = async (data: FormData) => {
 };
 
 const countScore = async () => {
-  const duties = await prisma.duty.findMany();
-  const users = await prisma.user.findMany();
+  try {
+    // Fetch all duties and users using raw queries
+    const duties: Duty[] = await prisma.$queryRaw`SELECT * FROM "Duty"`;
+    const users: User[] = await prisma.$queryRaw`SELECT * FROM "User"`;
 
-  // Create a map to hold user points
-  const usersMap = new Map(
-    users.map((user) => [user.userId, { ...user, points: 0 }])
-  );
+    // Create a map for user points initialization
+    const usersMap = new Map(
+      users.map((user) => [user.userId, { ...user, points: 0 }])
+    );
 
-  // Iterate over all duties and add points to corresponding user
-  duties.forEach((duty) => {
-    const user = usersMap.get(duty.userId);
-    if (user) {
-      user.points += duty.points_awarded;
-    }
-  });
-
-  // Convert map back to array
-  const updatedUsers = Array.from(usersMap.values());
-
-  // Update users in the database
-  for (const user of updatedUsers) {
-    await prisma.user.update({
-      where: { userId: user.userId },
-      data: { points: user.points },
+    // Aggregate points for each user based on duties
+    duties.forEach((duty) => {
+      const user = usersMap.get(duty.userId);
+      if (user) {
+        user.points += duty.points_awarded;
+      }
     });
+
+    // Convert map back to array
+    const updatedUsers = Array.from(usersMap.values());
+
+    // Update the user points in the database
+    await Promise.all(
+      updatedUsers.map(
+        (user) =>
+          prisma.$executeRaw`UPDATE "User" SET points = ${user.points} WHERE "userId" = ${user.userId}`
+      )
+    );
+
+    // Optionally, revalidate the path to reflect changes
+    revalidatePath("/");
+
+    console.log("User points updated successfully");
+  } catch (error) {
+    console.error("Error updating user points:", error);
   }
-
-  revalidatePath("/");
-
-  console.log("User points updated successfully");
 };
 
 const requestDutySwitch = async (data: FormData) => {
-  const requestingDuty = parseInt(
+  const requestingDutyId = parseInt(
     (data.get("requesting-duty") ?? "NO USER").toString()
-  ); // these are the duty ids
+  ); // These are the duty IDs
 
-  const originalDuty = parseInt(
+  const originalDutyId = parseInt(
     (data.get("duty-to-change") ?? "NO USER").toString()
-  ); // these are the duty ids
+  ); // These are the duty IDs
 
-  const requestingDutyObj = await prisma.duty.update({
-    // The requested duty has the requesting user's duty id, for the owned duty user to see what duty can be exchanged
-    where: { id: requestingDuty },
-    data: { requestSwitch: originalDuty },
+  // Fetch the requesting duty object
+  const requestingDuty = await prisma.duty.findUnique({
+    where: { id: requestingDutyId },
   });
 
-  console.log(requestingDutyObj);
+  if (!requestingDuty) {
+    throw new Error("Requesting duty not found");
+  }
+
+  // Ensure uniqueness of the originalDutyId in the requestSwitch array
+  const updatedRequestSwitch = Array.from(
+    new Set([...requestingDuty.requestSwitch, originalDutyId])
+  );
+
+  // Update the duty object with the new array
+  const updatedDuty = await prisma.duty.update({
+    where: { id: requestingDutyId },
+    data: {
+      requestSwitch: updatedRequestSwitch,
+    },
+  });
+
+  console.log(updatedDuty);
   revalidatePath("/");
 
-  return requestingDutyObj;
+  return updatedDuty;
+};
+
+const createSwitchObjects = async () => {
+  // Fetch all duties with pending switch requests
+  const requestedDutySwitches = (await fetchDuties()).filter(
+    (duty) => duty.requestSwitch.length > 0
+  );
+
+  // Create an array of objects
+  const switchObjects = await Promise.all(
+    requestedDutySwitches.flatMap(async (duty) => {
+      // Create an array of objects for each duty's requestSwitch
+      return Promise.all(
+        duty.requestSwitch.map(async (dutyToSwitchId) => {
+          // Fetch full duty object for the duty to switch
+          const dutyToSwitch = await prisma.duty.findUnique({
+            where: { id: dutyToSwitchId },
+            select: {
+              id: true,
+              date: true,
+              userId: true,
+              teamId: true,
+              name: true,
+              description: true,
+              points_awarded: true,
+              requestSwitch: true,
+            }, // Fetch the complete duty object
+          });
+
+          // Fetch the user object for the duty to switch
+          const userToSwitch = dutyToSwitch?.userId
+            ? await prisma.user.findUnique({
+                where: { userId: dutyToSwitch.userId },
+                // Fetch the necessary fields for the user object
+                select: {
+                  userId: true,
+                  username: true,
+                  points: true,
+                  admin: true,
+                },
+              })
+            : null;
+
+          return {
+            duty, // The full duty object (the one requesting the switch)
+            dutyToSwitch: dutyToSwitch, // The full duty object being switched to
+            userToSwitch, // Full user object for the dutyToSwitch
+          };
+        })
+      );
+    })
+  );
+
+  // Flatten the resulting array of arrays
+  return switchObjects.flat();
 };
 
 export {
@@ -258,6 +336,7 @@ export {
   createTeam,
   getTeams,
   updateTeamMembers,
+  createSwitchObjects,
   makeNotAvailable,
   getUsers,
   makeAvailable,

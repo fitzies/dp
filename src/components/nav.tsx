@@ -1,7 +1,9 @@
-import { getUser } from "@/lib/server";
+// "use server";
+
+import { getUser, logout } from "@/lib/server";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import ProfileCard from "./profile-card";
+import { Bell } from "lucide-react";
 
 const NavLink = ({ text, href }: { text: string; href: string }) => {
   return (
@@ -12,12 +14,9 @@ const NavLink = ({ text, href }: { text: string; href: string }) => {
 };
 
 const Nav = async () => {
-  // const userId = cookies().get("userId");
-  // if (!userId) {
-  //   return <></>;
-  // }
   const user = await getUser().catch((err) => {
     console.error(err);
+    // logout(new FormData());
   });
 
   if (!user) {
@@ -31,7 +30,12 @@ const Nav = async () => {
       </div>
       <NavLink text="My duties" href="/" />
       <NavLink text="Teams" href="/teams" />
-      <ProfileCard user={user} />
+      <div className="flex items-center ml-auto gap-4">
+        <Link href={"/notifications"} className="text-zinc-400 scale-90">
+          <Bell />
+        </Link>
+        <ProfileCard user={user} />
+      </div>
     </div>
   );
 };

@@ -40,10 +40,12 @@ model Duty {
 
   points_awarded Int
 
+  requestSwitch Int[] // List of duty ids from the original user's duty
+
   @@unique([date, teamId]) // Ensure that no two duties with the same teamId can be assigned on the same date
 
-  requestSwitch Int? // The duty id from the original user
 }
+
 
 
 model Team {

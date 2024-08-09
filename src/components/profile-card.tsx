@@ -17,7 +17,7 @@ const ProfileCard = ({ user }: { user: User }) => {
   const router = useRouter();
 
   return (
-    <div className="ml-auto cursor-pointer flex items-center gap-4">
+    <div className="cursor-pointer flex items-center gap-4">
       <Popover>
         <PopoverTrigger>
           <Avatar>

@@ -39,7 +39,9 @@ const SwitchDuty = ({
     .filter((duty) => duty.userId !== userId);
 
   const alreadyRequested = selectedDuty
-    ? strictDuties.find((duty) => duty.requestSwitch === selectedDuty.id)
+    ? strictDuties.find((duty) =>
+        duty.requestSwitch.some((id) => id === selectedDuty.id)
+      )
     : null;
 
   if (alreadyRequested) {
