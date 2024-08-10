@@ -32,7 +32,7 @@ const Page = ({ params }: { params: { slug: string } }) => {
       await submitLogin(formData);
       // Ensure loading state is set to false before redirect
       // setLoading(false);`
-      // router.push("/"); // Redirect to the home page
+      router.push("/"); // Redirect to the home page
     } catch (error) {
       setError((error as Error).message || "An unknown error occurred");
       // Set loading state to false if there's an error
