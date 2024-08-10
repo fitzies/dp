@@ -24,7 +24,7 @@ export default async function middleware(req: NextRequest) {
 
   // 6. Redirect to /dashboard if the user is authenticated
   if (
-    isPublicRoute &&
+    // isPublicRoute &&
     session?.userId &&
     !req.nextUrl.pathname.startsWith("/")
   ) {

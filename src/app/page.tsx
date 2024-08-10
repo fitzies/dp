@@ -1,6 +1,7 @@
+export const dynamic = "force-dynamic";
+
 import { fetchAllDuties, fetchDuties, getUser } from "@/lib/server";
 import PageWrapper from "@/components/page-wrapper";
-import { cookies } from "next/headers";
 import DutyCalendar from "@/components/duty-calendar";
 import { fetchUsers } from "@/lib/utils";
 
