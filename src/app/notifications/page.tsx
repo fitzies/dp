@@ -1,5 +1,10 @@
 import PageWrapper from "@/components/page-wrapper";
-import { createSwitchObjects, fetchDuties, getUser } from "../../lib/server";
+import {
+  createSwitchObjects,
+  declineSwitch,
+  fetchDuties,
+  getUser,
+} from "../../lib/server";
 import {
   Card,
   CardContent,
@@ -37,9 +42,35 @@ const Page = async ({ params }: { params: { slug: string } }) => {
               {switchItem.dutyToSwitch?.name} duty on the{" "}
               <span className="underline">{switchItem.dutyToSwitch?.date}</span>
             </CardContent>
-            <CardFooter className="gap-4">
-              <Button>Accept</Button>
-              <Button variant={"secondary"}>Decline</Button>
+            <CardFooter className="gap-2">
+              {/* Form to accept */}
+              <form action="">
+                <input
+                  className="hidden"
+                  name="duty1"
+                  value={switchItem.duty!.id}
+                />
+                <input
+                  className="hidden"
+                  name="duty2"
+                  value={switchItem.dutyToSwitch!.id}
+                />
+                <Button>Accept</Button>
+              </form>
+              {/* Form to decline */}
+              <form action={declineSwitch}>
+                <input
+                  className="hidden"
+                  name="duty1"
+                  value={switchItem.duty!.id}
+                />
+                <input
+                  className="hidden"
+                  name="duty2"
+                  value={switchItem.dutyToSwitch!.id}
+                />
+                <Button variant={"secondary"}>Decline</Button>
+              </form>
             </CardFooter>
           </Card>
         ))}

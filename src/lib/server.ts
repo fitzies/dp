@@ -329,6 +329,32 @@ const createSwitchObjects = async () => {
   return switchObjects.flat();
 };
 
+const declineSwitch = async (data: FormData) => {
+  const duty1 = parseInt(data.get("duty1")!.toString());
+  const duty2 = parseInt(data.get("duty2")!.toString());
+
+  // Retrieve the current requestSwitch array
+  const dutyRecord = await prisma.duty.findUnique({
+    where: { id: duty1 },
+    select: { requestSwitch: true },
+  });
+
+  if (dutyRecord && dutyRecord.requestSwitch) {
+    // Remove duty2 from the requestSwitch array
+    const updatedRequestSwitch = dutyRecord.requestSwitch.filter(
+      (id: number) => id !== duty2
+    );
+
+    // Update the record with the new requestSwitch array
+    await prisma.duty.update({
+      where: { id: duty1 },
+      data: { requestSwitch: updatedRequestSwitch },
+    });
+  }
+
+  revalidatePath("/notifications");
+};
+
 export {
   submitLogin,
   fetchDuties,
@@ -345,4 +371,5 @@ export {
   countScore,
   fetchAllDuties,
   requestDutySwitch,
+  declineSwitch,
 };
