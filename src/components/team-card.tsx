@@ -25,15 +25,19 @@ import Loading from "./loading";
 import AssignDutyPopup from "./assign-duty-popup";
 import { ArrowRight, Pencil } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "./ui/use-toast";
+import { revalidatePath } from "next/cache";
 
 const TeamCard = ({
   team,
   userId,
   existingUsers,
+  _members,
 }: {
   team: Team;
   userId: string;
   existingUsers: User[];
+  _members: User[];
 }) => {
   const [members, setMembers] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,7 +61,7 @@ const TeamCard = ({
         <CardDescription>
           {team.admin === userId && (
             <div className="flex items-center gap-4">
-              <AssignDutyPopup team={team} />
+              <AssignDutyPopup team={team} members={_members} />
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <span

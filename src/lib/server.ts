@@ -148,6 +148,8 @@ const updateTeamMembers = async (data: FormData) => {
       },
     },
   });
+
+  revalidatePath("/teams");
 };
 
 const makeNotAvailable = async (data: FormData) => {

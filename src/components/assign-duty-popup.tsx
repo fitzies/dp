@@ -1,6 +1,6 @@
 "use client";
 
-import { Team } from "@prisma/client";
+import { Team, User } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -23,14 +23,24 @@ import {
 import { Button } from "./ui/button";
 import { assignDuty } from "@/lib/algo";
 import Loading from "./loading"; // Ensure you have a loading component
+import { useToast } from "./ui/use-toast";
 
-const AssignDutyPopup = ({ team }: { team: Team }) => {
+const AssignDutyPopup = ({
+  team,
+  members,
+}: {
+  team: Team;
+  members: User[];
+}) => {
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(2024, 7, 20),
     to: addDays(new Date(2024, 8, 20), 20),
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const { toast } = useToast();
+
+  // const teamLength = members.length;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent the default form submission
@@ -41,6 +51,7 @@ const AssignDutyPopup = ({ team }: { team: Team }) => {
 
     try {
       await assignDuty(formData); // Call the function that handles the duty assignment
+      toast({ description: "Duties have been successfully assigned" });
       setDialogOpen(false); // Close the dialog
     } catch (error) {
       console.error("Error assigning duties:", error);
@@ -50,16 +61,29 @@ const AssignDutyPopup = ({ team }: { team: Team }) => {
     }
   };
 
+  const noMembersClick = () => {
+    toast({ description: "You have no members in this team" });
+  };
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger>
+      {members.length > 0 ? (
+        <DialogTrigger>
+          <span
+            className="hover:text-white duration-150 cursor-pointer"
+            onClick={() => setDialogOpen(true)}
+          >
+            Assign duty
+          </span>
+        </DialogTrigger>
+      ) : (
         <span
           className="hover:text-white duration-150 cursor-pointer"
-          onClick={() => setDialogOpen(true)}
+          onClick={noMembersClick}
         >
           Assign duty
         </span>
-      </DialogTrigger>
+      )}
       <DialogContent className="">
         <form className="space-y-4" onSubmit={handleSubmit}>
           <input className="hidden" name="teamId" value={team.id} />

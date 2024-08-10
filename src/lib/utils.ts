@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import crypto from "crypto";
-import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
 

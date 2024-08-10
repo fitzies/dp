@@ -28,6 +28,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
             <TeamCard
               key={team.name + team.id}
               team={team}
+              _members={team.members}
               userId={user.userId}
               existingUsers={existingUsers}
             />

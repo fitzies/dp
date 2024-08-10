@@ -13,11 +13,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { useToast } from "./ui/use-toast";
 
 const NewTeamForm = ({ userId, admin }: { userId: string; admin: boolean }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+  const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -30,6 +33,9 @@ const NewTeamForm = ({ userId, admin }: { userId: string; admin: boolean }) => {
     try {
       await createTeam(formData);
       // Optionally handle successful team creation
+      toast({
+        description: `${formData.get("name")!.toString()} has been created`,
+      });
       setIsDialogOpen(false); // Close the dialog after successful creation
     } catch (err) {
       setError("Failed to create team. Please try again.");
