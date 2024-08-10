@@ -4,7 +4,7 @@ import { PrismaClient, DutyName, Duty, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { checkPassword, hashPassword } from "./utils";
-import { createSession, decrypt } from "./session";
+import { createSession, verifySession } from "./session";
 
 const prisma = new PrismaClient();
 
@@ -66,17 +66,34 @@ const fetchAllDuties = async () => {
   return data;
 };
 
+// const getUser = async () => {
+//   const cookie = cookies().get("session")?.value;
+//   const session = await decrypt(cookie);
+
+//   const user = await prisma.user.findFirst({
+//     where: { userId: session?.userId },
+//   });
+
+//   if (!user) {
+//     throw Error("Can't find user");
+//   }
+//   return user;
+// };
+
 const getUser = async () => {
-  const cookie = cookies().get("session")?.value;
-  const session = await decrypt(cookie);
+  const session = await verifySession();
+  if (!session) {
+    throw Error("Can't find user");
+  }
 
   const user = await prisma.user.findFirst({
-    where: { userId: session?.userId },
+    where: { userId: session.userId },
   });
 
   if (!user) {
     throw Error("Can't find user");
   }
+
   return user;
 };
 
