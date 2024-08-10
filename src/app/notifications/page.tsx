@@ -1,5 +1,6 @@
 import PageWrapper from "@/components/page-wrapper";
 import {
+  acceptSwitch,
   createSwitchObjects,
   declineSwitch,
   fetchDuties,
@@ -20,7 +21,6 @@ const Page = async ({ params }: { params: { slug: string } }) => {
     // logout(new FormData());
   });
   const switches = await createSwitchObjects().then((result) => {
-    console.log(result);
     return result;
   });
 
@@ -44,7 +44,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
             </CardContent>
             <CardFooter className="gap-2">
               {/* Form to accept */}
-              <form action="">
+              <form action={acceptSwitch}>
                 <input
                   className="hidden"
                   name="duty1"

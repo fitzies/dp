@@ -268,7 +268,6 @@ const requestDutySwitch = async (data: FormData) => {
     },
   });
 
-  console.log(updatedDuty);
   revalidatePath("/");
 
   return updatedDuty;
@@ -352,7 +351,48 @@ const declineSwitch = async (data: FormData) => {
     });
   }
 
+  await countScore();
+
   revalidatePath("/notifications");
+};
+
+const acceptSwitch = async (data: FormData) => {
+  const duty1 = parseInt(data.get("duty1")!.toString());
+  const duty2 = parseInt(data.get("duty2")!.toString());
+
+  // Retrieve both duty records
+  const [dutyRecord1, dutyRecord2] = await Promise.all([
+    prisma.duty.findUnique({
+      where: { id: duty1 },
+      select: { userId: true, requestSwitch: true },
+    }),
+    prisma.duty.findUnique({ where: { id: duty2 }, select: { userId: true } }),
+  ]);
+
+  if (dutyRecord1 && dutyRecord2) {
+    // Remove duty2 from the requestSwitch array of duty1
+    const updatedRequestSwitch = dutyRecord1.requestSwitch.filter(
+      (id: number) => id !== duty2
+    );
+
+    // Swap the userId values and update the requestSwitch array
+    await Promise.all([
+      prisma.duty.update({
+        where: { id: duty1 },
+        data: {
+          userId: dutyRecord2.userId,
+          requestSwitch: updatedRequestSwitch,
+        },
+      }),
+      prisma.duty.update({
+        where: { id: duty2 },
+        data: { userId: dutyRecord1.userId },
+      }),
+    ]);
+  }
+
+  // Revalidate path if needed
+  await revalidatePath("/notifications");
 };
 
 export {
@@ -371,5 +411,6 @@ export {
   countScore,
   fetchAllDuties,
   requestDutySwitch,
+  acceptSwitch,
   declineSwitch,
 };
