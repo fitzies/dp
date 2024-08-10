@@ -1,21 +1,40 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { decrypt } from "./lib/session";
 
-// This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
-  // const userId = cookies().get("userId");
-  const isLoggedIn = request.cookies.has("userId");
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL("/login", request.url));
+// 1. Specify protected and public routes
+const protectedRoutes = ["/", "/teams", "/credentials"];
+const publicRoutes = ["/login"];
+
+export default async function middleware(req: NextRequest) {
+  // 2. Check if the current route is protected or public
+  const path = req.nextUrl.pathname;
+  const isProtectedRoute = protectedRoutes.includes(path);
+  const isPublicRoute = publicRoutes.includes(path);
+
+  // 3. Decrypt the session from the cookie
+  const cookie = cookies().get("session")?.value;
+  const session = await decrypt(cookie);
+
+  // 5. Redirect to /login if the user is not authenticated
+  if (isProtectedRoute && !session?.userId) {
+    return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 
-  // if (userId && userId.value) {
+  // 6. Redirect to /dashboard if the user is authenticated
+  if (
+    isPublicRoute &&
+    session?.userId &&
+    !req.nextUrl.pathname.startsWith("/")
+  ) {
+    return NextResponse.redirect(new URL("/", req.nextUrl));
+  }
+
   return NextResponse.next();
-  // }
 }
 
-// See "Matching Paths" below to learn more
+// Routes Middleware should not run on
 export const config = {
-  matcher: "/((?!api|_next/static|_next/image|favicon.ico|login).*)",
+  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };

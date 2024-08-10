@@ -4,6 +4,7 @@ import { PrismaClient, DutyName, Duty, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { checkPassword, hashPassword } from "./utils";
+import { createSession, decrypt } from "./session";
 
 const prisma = new PrismaClient();
 
@@ -37,7 +38,7 @@ const submitLogin = async (data: FormData) => {
 
     if (matchPassword) {
       console.log("Login successful for user:", username);
-      cookies().set("userId", user.userId.toString());
+      await createSession(user.userId);
       return user;
     } else {
       throw new Error("Invalid password");
@@ -49,11 +50,11 @@ const submitLogin = async (data: FormData) => {
 };
 
 const fetchDuties = async () => {
-  const userId = cookies().get("userId")?.value;
+  const user = await getUser();
   await countScore();
 
   const data = await prisma.duty.findMany({
-    where: { userId },
+    where: { userId: user.userId },
   });
 
   return data;
@@ -66,9 +67,13 @@ const fetchAllDuties = async () => {
 };
 
 const getUser = async () => {
-  const userId = cookies().get("userId")!.value;
+  const cookie = cookies().get("session")?.value;
+  const session = await decrypt(cookie);
 
-  const user = await prisma.user.findFirst({ where: { userId } });
+  const user = await prisma.user.findFirst({
+    where: { userId: session?.userId },
+  });
+
   if (!user) {
     throw Error("Can't find user");
   }
