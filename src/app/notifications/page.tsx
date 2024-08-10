@@ -26,6 +26,9 @@ const Page = async ({ params }: { params: { slug: string } }) => {
 
   return (
     <PageWrapper>
+      <h1 className="text-2xl font-semibold">
+        Notifications ({switches.length}):
+      </h1>
       <div className="flex flex-col gap-2">
         {switches.map((switchItem, index) => (
           <Card key={index} className="overflow-hidden">
